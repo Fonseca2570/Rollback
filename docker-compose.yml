@@ -1,0 +1,44 @@
+version: "3.9"
+
+volumes:
+  db_data: {}
+
+networks:
+  rollback_net:
+    driver: bridge
+
+services:
+    db:
+      image: mysql:5.7
+      container_name: "rollback"
+      volumes:
+        - db_data:/var/lib/mysql
+        - ./init.sql:/data/application/init.sql
+      restart: always
+      ports:
+        - 3306:3306
+      networks:
+        - rollback_net
+      command: --init-file /data/application/init.sql
+      environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: FirstName
+        MYSQL_USER: root
+        MYSQL_PASSWORD: password
+
+
+    transaction:
+      build:
+        context: ./transaction
+        dockerfile: Dockerfile
+      container_name: "transaction"
+      depends_on:
+        - db
+      restart: on-failure
+      ports:
+        - 8800:8800
+      networks:
+        - rollback_net
+      command: go run main.go
+
+      

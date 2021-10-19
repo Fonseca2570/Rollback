@@ -1,0 +1,172 @@
+definitions:
+  Error:
+    properties:
+      msg:
+        type: string
+        x-go-name: Msg
+    type: object
+    x-go-name: ApiError
+    x-go-package: transaction/api_error
+  ListTask:
+    items:
+      $ref: '#/definitions/Task'
+    type: array
+    x-go-package: transaction/models/transaction
+  NewTask:
+    properties:
+      id_transaction:
+        format: int64
+        type: integer
+        x-go-name: IdTask
+      id_users:
+        format: int64
+        type: integer
+        x-go-name: IdUser
+      summary:
+        type: string
+        x-go-name: Summary
+    type: object
+    x-go-package: transaction/models/transaction
+  NewTaskRequestBody:
+    properties:
+      summary:
+        description: in:body
+        minimum: 1
+        type: string
+        x-go-name: Summary
+    required:
+    - summary
+    type: object
+    x-go-package: transaction/controllers/transaction
+  Task:
+    properties:
+      created_at:
+        type: string
+        x-go-name: CreatedAt
+      id:
+        format: int64
+        type: integer
+        x-go-name: Id
+      summary:
+        type: string
+        x-go-name: Summary
+      user:
+        type: string
+        x-go-name: User
+    type: object
+    x-go-package: transaction/models/transaction
+info: {}
+paths:
+  /task:
+    get:
+      description: 'Description: If manager lists all transaction if technician only list
+        the transaction that are created by the authenticated user'
+      operationId: get_list_transaction
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ListTask
+          schema:
+            $ref: '#/definitions/ListTask'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+      schemes:
+      - https
+      security:
+      - BasicAuth: []
+      summary: Gets List of transaction.
+      tags:
+      - get_list_transaction
+    post:
+      consumes:
+      - application/json
+      description: 'Description: Create New Task'
+      operationId: NewTaskRequest
+      parameters:
+      - in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/NewTaskRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: NewTask
+          schema:
+            $ref: '#/definitions/NewTask'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+      schemes:
+      - https
+      security:
+      - BasicAuth: []
+      summary: Create New Task.
+      tags:
+      - new_task
+  /task/{id}:
+    get:
+      description: 'Description: Gets one transaction'
+      operationId: GetOneRequest
+      parameters:
+      - format: int64
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+        x-go-name: Id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task
+          schema:
+            $ref: '#/definitions/Task'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+      schemes:
+      - https
+      security:
+      - BasicAuth: []
+      summary: Gets one transaction.
+      tags:
+      - get_one_task
+  /users/{id}/task:
+    get:
+      description: 'Description: Get lists of transaction by user only for managers'
+      operationId: GetByUserRequest
+      parameters:
+      - format: int64
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+        x-go-name: Id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ListTask
+          schema:
+            $ref: '#/definitions/ListTask'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+      schemes:
+      - https
+      security:
+      - BasicAuth: []
+      summary: Gets List of transaction By user.
+      tags:
+      - get_list_transaction_by_user
+swagger: "2.0"
