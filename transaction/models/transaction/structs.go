@@ -6,3 +6,9 @@ type UpdateModel struct {
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
 }
+
+type UpdateResponseServiceOne struct {
+	Error     string
+	TableName string
+	RowId     int64
+}
