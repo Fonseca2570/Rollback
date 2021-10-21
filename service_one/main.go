@@ -21,9 +21,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
+	"service_one/database"
+	"service_one/initialize"
 
 	"google.golang.org/grpc"
 	pb "service_one/proto"
@@ -39,15 +40,25 @@ type server struct {
 }
 
 func (s *server) UpdateFirstName(ctx context.Context, in *pb.UpdateFirstNameRequest) (*pb.UpdateFirstNameResponse, error) {
-	fmt.Println(in)
-	return &pb.UpdateFirstNameResponse{
-		Error: "",
-		TableName: "test",
-		RowId: 100,
-	}, nil
+	response := &pb.UpdateFirstNameResponse{}
+
+	_, err := database.DbConnection.Update("user_one").
+		Set("first_name", in.FirstName).
+		Where("id_users = ?", in.UsersId).
+		Exec()
+
+	if err != nil {
+		response.Error = err.Error()
+	}
+
+	response.TableName = "user_one"
+	response.RowId = in.UsersId
+
+	return response, nil
 }
 
 func main() {
+	initialize.Initialize()
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

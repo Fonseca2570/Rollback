@@ -23,22 +23,22 @@ services:
       environment:
         MYSQL_ROOT_PASSWORD: password
         MYSQL_DATABASE: FirstName
-        MYSQL_USER: root
+        MYSQL_USER: rollback
         MYSQL_PASSWORD: password
 
 
-    transaction:
-      build:
-        context: ./transaction
-        dockerfile: Dockerfile
-      container_name: "transaction"
-      depends_on:
-        - db
-      restart: on-failure
-      ports:
-        - 8800:8800
-      networks:
-        - rollback_net
-      command: go run main.go
+    #transaction:
+    #  build:
+    #    context: ./transaction
+    #    dockerfile: Dockerfile
+    #  container_name: "transaction"
+    #  depends_on:
+    #    - db
+    #  restart: on-failure
+    #  ports:
+    #    - 8800:8800
+    #  networks:
+    #    - rollback_net
+    #  command: go run main.go
 
       

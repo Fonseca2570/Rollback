@@ -33,7 +33,7 @@ func connServiceOne() error {
 
 	user := &pb.UpdateFirstNameRequest{
 		FirstName: "joao",
-		UsersId: 1,
+		UsersId: 100,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
