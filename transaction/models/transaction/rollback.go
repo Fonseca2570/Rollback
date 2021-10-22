@@ -10,8 +10,8 @@ import (
 
 type RollbackInterface interface {
 	Rollback()
+	GetError() string
 }
-
 
 func (u *UpdateResponseServiceOne) Rollback() {
 	// Set up a connection to the server.
@@ -22,17 +22,20 @@ func (u *UpdateResponseServiceOne) Rollback() {
 	defer conn.Close()
 	c := pb.NewServiceClient(conn)
 
-	user := &pb.RollbackRequest{
-		FirstName: u.FirstName,
-		UsersId:   int64(u.IdUser),
+	rollback := &pb.RollbackRequest{
+		TableName: u.TableName,
+		Id:        u.RowId,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := c.Rollback(ctx, user)
+	r, err := c.Rollback(ctx, rollback)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greeting: %s", r.TableName)
+}
+
+func (u *UpdateResponseServiceOne) GetError() string{
+	return u.Error
 }
