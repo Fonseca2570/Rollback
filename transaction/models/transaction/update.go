@@ -21,15 +21,16 @@ func (u *UpdateModel) Update() error {
 	var errorCount int
 
 	results = append(results, connServiceOne(u))
-	// TODO adjust the connService for Two and Three
-	results = append(results, connServiceOne(u))
-	results = append(results, connServiceOne(u))
+	//results = append(results, connServiceTwo(u))
+	//results = append(results, connServiceThree(u))
 
 	for _, result := range results{
 		if result.GetError() != ""{
 			errorCount++
 		}
 	}
+
+	errorCount = 1
 
 	if errorCount > 0 {
 		for _, result := range results {
@@ -65,6 +66,64 @@ func connServiceOne(u *UpdateModel) *UpdateResponseServiceOne{
 	}
 
 	return &UpdateResponseServiceOne{
+		Error: r.Error,
+		TableName: r.TableName,
+		RowId: r.RowId,
+	}
+}
+
+func connServiceTwo(u *UpdateModel) *UpdateResponseServiceTwo{
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address2, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewServiceTwoClient(conn)
+
+	user := &pb.UpdateLastNameRequest{
+		LastName: u.LastName,
+		UsersId:   int64(u.IdUser),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := c.UpdateLastName(ctx, user)
+	if err != nil {
+		r.Error = err.Error()
+	}
+
+	return &UpdateResponseServiceTwo{
+		Error: r.Error,
+		TableName: r.TableName,
+		RowId: r.RowId,
+	}
+}
+
+func connServiceThree(u *UpdateModel) *UpdateResponseServiceThree{
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address3, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewServiceThreeClient(conn)
+
+	user := &pb.UpdateEmailRequest{
+		LastName: u.LastName,
+		UsersId:   int64(u.IdUser),
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := c.UpdateEmail(ctx, user)
+	if err != nil {
+		r.Error = err.Error()
+	}
+
+	return &UpdateResponseServiceThree{
 		Error: r.Error,
 		TableName: r.TableName,
 		RowId: r.RowId,

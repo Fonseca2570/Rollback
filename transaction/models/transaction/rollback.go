@@ -30,12 +30,69 @@ func (u *UpdateResponseServiceOne) Rollback() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := c.Rollback(ctx, rollback)
+	_, err = c.Rollback(ctx, rollback)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 }
 
+
 func (u *UpdateResponseServiceOne) GetError() string{
+	return u.Error
+}
+
+func (u *UpdateResponseServiceTwo) GetError() string{
+	return u.Error
+}
+
+func (u *UpdateResponseServiceTwo) Rollback() {
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address2, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewServiceTwoClient(conn)
+
+	rollback := &pb.RollbackTwoRequest{
+		TableName: u.TableName,
+		Id:        u.RowId,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	_, err = c.RollbackTwo(ctx, rollback)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+}
+
+
+func (u *UpdateResponseServiceThree) Rollback() {
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address3, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewServiceThreeClient(conn)
+
+	rollback := &pb.RollbackThreeRequest{
+		TableName: u.TableName,
+		Id:        u.RowId,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	_, err = c.RollbackThree(ctx, rollback)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+}
+
+
+func (u *UpdateResponseServiceThree) GetError() string{
 	return u.Error
 }

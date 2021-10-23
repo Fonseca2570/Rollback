@@ -21,6 +21,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/mailru/dbr"
 	"log"
 	"net"
 	"service_one/database"
@@ -51,8 +53,69 @@ func (s *server) UpdateFirstName(ctx context.Context, in *pb.UpdateFirstNameRequ
 		response.Error = err.Error()
 	}
 
+	var id int
+	_, err = database.DbConnection.Select("id").From("user_one").
+		Where("id_users = ?", in.UsersId).
+		Where("first_name = ?", in.FirstName).
+		Load(&id)
+
+
 	response.TableName = "user_one"
-	response.RowId = in.UsersId
+	response.RowId = int64(id)
+
+	return response, nil
+}
+
+type Data struct {
+	Column string `db:"COLUMN_NAME"`
+}
+
+func (s *server) Rollback(ctx context.Context, in *pb.RollbackRequest) (*pb.RollbackResponse, error){
+	response := &pb.RollbackResponse{}
+	var data []string
+
+
+	_, err := database.DbConnection.Select("COLUMN_NAME").
+		From(dbr.I("INFORMATION_SCHEMA.COLUMNS")).
+		Where("TABLE_NAME = ?", in.TableName).
+		Load(&data)
+
+	if err != nil {
+		return response, err
+	}
+	mapping := make(map[string]interface{})
+
+	for i, _ := range data {
+		if data[i] == "id" {
+			data[i] = in.TableName+"_id"
+		}
+	}
+
+
+	_, err = database.DbConnection.Select(data...).
+		From(in.TableName+"_history").
+		Where(fmt.Sprintf("%s_id = ?", in.TableName), in.Id).
+		Limit(1).
+		OrderDir("date_changed", false).
+		Load(&mapping)
+
+
+	mapping["id"] = mapping[in.TableName+"_id"]
+
+	delete(mapping,in.TableName+"_id")
+
+	builder := database.DbConnection.Update(in.TableName)
+	for key, value := range mapping {
+		if key != "id" {
+			builder.Set(key, value)
+		}
+	}
+	_, err = builder.Where("id = ?",mapping["id"]).Exec()
+	if err != nil {
+		return response, err
+	}
+
+	response.Success = true
 
 	return response, nil
 }
@@ -70,3 +133,4 @@ func main() {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
+

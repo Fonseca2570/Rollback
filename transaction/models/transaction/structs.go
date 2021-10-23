@@ -12,3 +12,15 @@ type UpdateResponseServiceOne struct {
 	TableName string
 	RowId     int64
 }
+
+type UpdateResponseServiceTwo struct {
+	Error     string
+	TableName string
+	RowId     int64
+}
+
+type UpdateResponseServiceThree struct {
+	Error     string
+	TableName string
+	RowId     int64
+}

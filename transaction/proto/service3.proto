@@ -22,29 +22,30 @@ option java_outer_classname = "HelloWorldProto";
 package proto;
 
 // The greeting service definition.
-service Service {
-  rpc UpdateFirstName (UpdateFirstNameRequest) returns (UpdateFirstNameResponse) {}
-  rpc Rollback (RollbackRequest) returns (RollbackResponse) {}
+service ServiceThree {
+  rpc UpdateEmail (UpdateEmailRequest) returns (UpdateEmailResponse) {}
+  rpc RollbackThree (RollbackThreeRequest) returns (RollbackThreeResponse) {}
 }
 
 // The request message containing the user's name.
-message UpdateFirstNameRequest {
+message UpdateEmailRequest {
   int64 users_id = 1;
-  string first_name = 2;
+  string last_name = 2;
 }
 
 // The response message containing the greetings
-message UpdateFirstNameResponse {
+message UpdateEmailResponse {
   string error = 1;
   string table_name = 2;
   int64 row_id = 3;
 }
 
-message RollbackRequest {
-    string table_name = 1;
-    int64 id = 2;
+
+message RollbackThreeRequest {
+  string table_name = 1;
+  int64 id = 2;
 }
 
-message RollbackResponse {
-    bool success = 1;
+message RollbackThreeResponse {
+  bool success = 1;
 }
