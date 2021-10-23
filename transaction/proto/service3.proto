@@ -30,7 +30,7 @@ service ServiceThree {
 // The request message containing the user's name.
 message UpdateEmailRequest {
   int64 users_id = 1;
-  string last_name = 2;
+  string email = 2;
 }
 
 // The response message containing the greetings

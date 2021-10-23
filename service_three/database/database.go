@@ -4,7 +4,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mailru/dbr"
-	"service_one/globals"
+	"service_three/globals"
 )
 
 var DbConnection *dbr.Session

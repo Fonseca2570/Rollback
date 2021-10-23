@@ -21,18 +21,19 @@ func (u *UpdateModel) Update() error {
 	var errorCount int
 
 	results = append(results, connServiceOne(u))
-	//results = append(results, connServiceTwo(u))
-	//results = append(results, connServiceThree(u))
+	results = append(results, connServiceTwo(u))
+	results = append(results, connServiceThree(u))
 
-	for _, result := range results{
-		if result.GetError() != ""{
+	for _, result := range results {
+		if result.GetError() != "" {
 			errorCount++
 		}
 	}
 
-	errorCount = 1
-
 	if errorCount > 0 {
+		// Service three will crate an error so the rollback happens
+		fmt.Println("Error count is bigger then 0")
+		fmt.Println(errorCount)
 		for _, result := range results {
 			if result.GetError() == "" {
 				result.Rollback()
@@ -43,11 +44,11 @@ func (u *UpdateModel) Update() error {
 	return nil
 }
 
-func connServiceOne(u *UpdateModel) *UpdateResponseServiceOne{
+func connServiceOne(u *UpdateModel) *UpdateResponseServiceOne {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address1, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Printf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewServiceClient(conn)
@@ -57,7 +58,7 @@ func connServiceOne(u *UpdateModel) *UpdateResponseServiceOne{
 		UsersId:   int64(u.IdUser),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	r, err := c.UpdateFirstName(ctx, user)
@@ -66,27 +67,27 @@ func connServiceOne(u *UpdateModel) *UpdateResponseServiceOne{
 	}
 
 	return &UpdateResponseServiceOne{
-		Error: r.Error,
+		Error:     r.Error,
 		TableName: r.TableName,
-		RowId: r.RowId,
+		RowId:     r.RowId,
 	}
 }
 
-func connServiceTwo(u *UpdateModel) *UpdateResponseServiceTwo{
+func connServiceTwo(u *UpdateModel) *UpdateResponseServiceTwo {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address2, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Printf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewServiceTwoClient(conn)
 
 	user := &pb.UpdateLastNameRequest{
 		LastName: u.LastName,
-		UsersId:   int64(u.IdUser),
+		UsersId:  int64(u.IdUser),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	r, err := c.UpdateLastName(ctx, user)
@@ -95,13 +96,13 @@ func connServiceTwo(u *UpdateModel) *UpdateResponseServiceTwo{
 	}
 
 	return &UpdateResponseServiceTwo{
-		Error: r.Error,
+		Error:     r.Error,
 		TableName: r.TableName,
-		RowId: r.RowId,
+		RowId:     r.RowId,
 	}
 }
 
-func connServiceThree(u *UpdateModel) *UpdateResponseServiceThree{
+func connServiceThree(u *UpdateModel) *UpdateResponseServiceThree {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address3, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -111,11 +112,11 @@ func connServiceThree(u *UpdateModel) *UpdateResponseServiceThree{
 	c := pb.NewServiceThreeClient(conn)
 
 	user := &pb.UpdateEmailRequest{
-		LastName: u.LastName,
-		UsersId:   int64(u.IdUser),
+		Email:   u.Email,
+		UsersId: int64(u.IdUser),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	r, err := c.UpdateEmail(ctx, user)
@@ -124,8 +125,8 @@ func connServiceThree(u *UpdateModel) *UpdateResponseServiceThree{
 	}
 
 	return &UpdateResponseServiceThree{
-		Error: r.Error,
+		Error:     r.Error,
 		TableName: r.TableName,
-		RowId: r.RowId,
+		RowId:     r.RowId,
 	}
 }

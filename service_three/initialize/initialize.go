@@ -1,8 +1,8 @@
 package initialize
 
 import (
-	"service_one/database"
-	"service_one/globals"
+	"service_three/database"
+	"service_three/globals"
 )
 
 func Initialize() {

@@ -1,9 +1,9 @@
-module service_one
+module service_three
 
 go 1.17
 
 require (
-	github.com/BurntSushi/toml v0.3.1
+	github.com/BurntSushi/toml v0.4.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/mailru/dbr v3.0.0+incompatible
 	google.golang.org/grpc v1.41.0

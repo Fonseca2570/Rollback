@@ -21,13 +21,15 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/mailru/dbr"
 	"log"
 	"net"
-	"service_one/database"
-	"service_one/initialize"
+	"service_three/database"
+	"service_three/initialize"
 
 	"google.golang.org/grpc"
-	pb "service_one/proto"
+	pb "service_three/proto"
 )
 
 const (
@@ -36,23 +38,84 @@ const (
 
 // server is used to implement proto.GreeterServer.
 type server struct {
-	pb.UnimplementedServiceServer
+	pb.UnimplementedServiceThreeServer
 }
 
 func (s *server) UpdateEmail(ctx context.Context, in *pb.UpdateEmailRequest) (*pb.UpdateEmailResponse, error) {
 	response := &pb.UpdateEmailResponse{}
 
-	_, err := database.DbConnection.Update("user_one").
-		Set("last_name", in.Email).
-		Where("id_users = ?", in.UsersId).Exec()
-
+	_, err := database.DbConnection.Update("user_three").
+		Set("email2", in.Email).
+		Where("id_users = ?", in.UsersId).
+		Exec()
 
 	if err != nil {
 		response.Error = err.Error()
 	}
 
+	var id int
+	_, err = database.DbConnection.Select("id").From("user_three").
+		Where("id_users = ?", in.UsersId).
+		Where("email = ?", in.Email).
+		Load(&id)
+
+
 	response.TableName = "user_three"
-	response.RowId = in.UsersId
+	response.RowId = int64(id)
+
+	return response, nil
+}
+
+type Data struct {
+	Column string `db:"COLUMN_NAME"`
+}
+
+func (s *server) RollbackThree(ctx context.Context, in *pb.RollbackThreeRequest) (*pb.RollbackThreeResponse, error){
+	response := &pb.RollbackThreeResponse{}
+	var data []string
+
+
+	_, err := database.DbConnection.Select("COLUMN_NAME").
+		From(dbr.I("INFORMATION_SCHEMA.COLUMNS")).
+		Where("TABLE_NAME = ?", in.TableName).
+		Load(&data)
+
+	if err != nil {
+		return response, err
+	}
+	mapping := make(map[string]interface{})
+
+	for i, _ := range data {
+		if data[i] == "id" {
+			data[i] = in.TableName+"_id"
+		}
+	}
+
+
+	_, err = database.DbConnection.Select(data...).
+		From(in.TableName+"_history").
+		Where(fmt.Sprintf("%s_id = ?", in.TableName), in.Id).
+		Limit(1).
+		OrderDir("date_changed", false).
+		Load(&mapping)
+
+
+	mapping["id"] = mapping[in.TableName+"_id"]
+
+	delete(mapping,in.TableName+"_id")
+
+	builder := database.DbConnection.Update(in.TableName)
+	for key, value := range mapping {
+		if key != "id" {
+			builder.Set(key, value)
+		}
+	}
+	_, err = builder.Where("id = ?",mapping["id"]).Exec()
+	if err != nil {
+		return response, err
+	}
+
+	response.Success = true
 
 	return response, nil
 }
@@ -64,9 +127,10 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterServiceServer(s, &server{})
+	pb.RegisterServiceThreeServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
+

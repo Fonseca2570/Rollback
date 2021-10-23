@@ -17,10 +17,3 @@ CREATE TABLE `user_two_history`
     `date_changed` DATETIME,
     PRIMARY KEY (`id`)
 );
-
-DELIMITER //
-CREATE TRIGGER `update_user_two` BEFORE UPDATE ON `user_two`
-    FOR EACH ROW INSERT INTO user_two_history
-                 SELECT NULL, h.*, NOW() FROM user_two h WHERE id = OLD.id
-    //
-DELIMITER ;
